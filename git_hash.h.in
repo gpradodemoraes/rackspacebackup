@@ -1,0 +1,8 @@
+#ifndef _GIT_HASH_H_
+#define _GIT_HASH_H_
+
+#define GIT_REV "@GIT_REV@@GIT_DIFF@"
+#define GIT_TAG "@GIT_TAG@"
+#define GIT_BRANCH "@GIT_BRANCH@"
+
+#endif /* _GIT_HASH_H_ */
