@@ -7,8 +7,43 @@ using json = nlohmann::json;
 #include "remote.hpp"
 #include "config.hpp"
 #include <string>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 extern const char *build_date;
 extern const char *rackspace_access_filename;
+
+struct ParsedTime {
+	std::tm tm{};
+	int milliseconds = 0;
+};
+
+static ParsedTime parseIso8601(const std::string &s) {
+	ParsedTime result;
+	std::istringstream ss(s);
+
+	ss >> std::get_time(&result.tm, "%Y-%m-%dT%H:%M:%S");
+	if (ss.fail()) {
+		throw std::runtime_error("Failed to parse timestamp: " + s);
+	}
+
+	// Next char should be '.' if milliseconds are present
+	if (ss.peek() == '.') {
+		ss.ignore(); // skip '.'
+		std::string msStr;
+		while (std::isdigit(ss.peek())) {
+			msStr += static_cast<char>(ss.get());
+		}
+		if (!msStr.empty()) {
+			// Pad/truncate to 3 digits in case of different precision
+			msStr.resize(3, '0');
+			result.milliseconds = std::stoi(msStr);
+		}
+	}
+
+	// Optional trailing 'Z' — just consumed, since we assume UTC
+	return result;
+}
 
 int main() {
 	fmt::println("Hello, World!");
@@ -49,6 +84,24 @@ int main() {
 		return 1;
 	}
 
+	json access_json_data = json::parse(f);
 	f.close();
+
+	std::string access_token = access_json_data["access"]["token"]["id"].get<std::string>();
+	std::string expires = access_json_data["access"]["token"]["expires"].get<std::string>();
+
+	ParsedTime pt = parseIso8601(expires);
+
+#if defined(_WIN32)
+	std::time_t expiresTime = _mkgmtime(&pt.tm);
+#else
+	std::time_t expiresTime = timegm(&pt.tm);
+#endif
+	std::time_t now = std::time(nullptr);
+
+	if (now > expiresTime) {
+		fmt::println("The token is expired. Must revalidate!");
+		return 1;
+	}
 	return 0;
 }
