@@ -18,5 +18,13 @@ class config {
 
 	char *get_api_key() { return (char *)api_key.c_str(); }
 };
+
+inline constexpr const char *identity_url = "https://identity.api.rackspacecloud.com/v2.0/tokens";
+
+inline constexpr const char *authenticate_json_char =
+	R"({"auth":{"RAX-KSKEY:apiKeyCredentials":{"username":"yourUserName","apiKey":"yourApiKey"}}})";
+
+inline constexpr const char *rackspace_access_filename = "rackspace_access.json";
+inline constexpr const char *rackspace_config_filename = "config.json";
 } // namespace rackspaceconfig
 #endif

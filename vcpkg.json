@@ -1,6 +1,6 @@
 {
   "dependencies": [
     "fmt",
-	"nlohmann-json"
+	"nlohmann-json","curl"
   ]
 }
