@@ -65,43 +65,49 @@ int main() {
 	fmt::println("CONFIG: username {}; api_key {}", conf.get_username(), conf.get_api_key());
 
 	f.open(rackspaceconfig::rackspace_access_filename);
-	int tries = 3;
-	while (!f.good() && tries-- > 0) {
-		std::string response;
-		if (authenticate_to_rackspace_cloud(&conf, response, error) > 0) {
-			fmt::println("Erro chamando authenticate_to_rackspace_cloud: {}", error);
+	bool is_expired = true;
+	int is_expired_tries = 3;
+	while (is_expired&&is_expired_tries-- > 0) {
+		int tries = 3;
+		while (!f.good() && tries-- > 0) {
+			std::string response;
+			if (authenticate_to_rackspace_cloud(&conf, response, error) > 0) {
+				fmt::println("Erro chamando authenticate_to_rackspace_cloud: {}", error);
+				return 1;
+			}
+
+			std::ofstream access_filename(rackspaceconfig::rackspace_access_filename);
+			access_filename << response;
+			access_filename.close();
+			f.open(rackspaceconfig::rackspace_access_filename);
+		}
+
+		if (!f.good()) {
+			fmt::println("Giving up on file {}", rackspaceconfig::rackspace_access_filename);
 			return 1;
 		}
 
-		std::ofstream access_filename(rackspaceconfig::rackspace_access_filename);
-		access_filename << response;
-		access_filename.close();
-		f.open(rackspaceconfig::rackspace_access_filename);
-	}
+		json access_json_data = json::parse(f);
+		f.close();
 
-	if (!f.good()) {
-		fmt::println("Giving up on file {}", rackspaceconfig::rackspace_access_filename);
-		return 1;
-	}
+		std::string access_token = access_json_data["access"]["token"]["id"].get<std::string>();
+		std::string expires = access_json_data["access"]["token"]["expires"].get<std::string>();
 
-	json access_json_data = json::parse(f);
-	f.close();
-
-	std::string access_token = access_json_data["access"]["token"]["id"].get<std::string>();
-	std::string expires = access_json_data["access"]["token"]["expires"].get<std::string>();
-
-	ParsedTime pt = parseIso8601(expires);
+		ParsedTime pt = parseIso8601(expires);
 
 #if defined(_WIN32)
-	std::time_t expiresTime = _mkgmtime(&pt.tm);
+		std::time_t expiresTime = _mkgmtime(&pt.tm);
 #else
-	std::time_t expiresTime = timegm(&pt.tm);
+		std::time_t expiresTime = timegm(&pt.tm);
 #endif
-	std::time_t now = std::time(nullptr);
+		std::time_t now = std::time(nullptr);
 
-	if (now > expiresTime) {
-		fmt::println("The token is expired. Must revalidate!");
-		return 1;
+		if (now > expiresTime) {
+			fmt::println("The token is expired. Must revalidate!");
+			std::remove(rackspaceconfig::rackspace_access_filename);
+		} else {
+			is_expired = false;
+		}
 	}
 	return 0;
 }
