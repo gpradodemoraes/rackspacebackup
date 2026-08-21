@@ -44,7 +44,7 @@ if (MSVC)
 endif()
 
 
-add_executable(rackspacebackup main.cpp build_timestamp.cpp remote.cpp)
+add_executable(rackspacebackup main.cpp build_timestamp.cpp remote.cpp rackspace.cpp)
 
 target_link_libraries(rackspacebackup PRIVATE fmt::fmt-header-only)
 target_link_libraries(rackspacebackup PRIVATE nlohmann_json::nlohmann_json)
