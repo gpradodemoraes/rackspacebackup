@@ -87,7 +87,7 @@ int get_rackspace_access_information(rackspaceconfig::config *conf, nlohmann::js
 }
 
 int get_rackspace_cloudfiles_info(nlohmann::json *access_info, rackspaceconfig::cloudfiles_info *cloudfiles_info,
-								  char *error) {
+								  std::string region, char *error) {
 	cloudfiles_info->access_token = (*access_info)["access"]["token"]["id"].get<std::string>();
 
 	auto serviceCatalog = (*access_info)["access"]["serviceCatalog"].get<std::vector<nlohmann::json>>();
@@ -95,7 +95,7 @@ int get_rackspace_cloudfiles_info(nlohmann::json *access_info, rackspaceconfig::
 	for (const auto &service : serviceCatalog) {
 		if (service["name"] == "cloudFiles") {
 			for (const auto &endpoint : service["endpoints"]) {
-				if (endpoint["region"] == "ORD") {
+				if (endpoint["region"] == region) {
 					cloudfiles_info->region = endpoint["region"].get<std::string>();
 					cloudfiles_info->public_url = endpoint["publicURL"].get<std::string>();
 					return 0;
@@ -103,5 +103,21 @@ int get_rackspace_cloudfiles_info(nlohmann::json *access_info, rackspaceconfig::
 			}
 		}
 	}
+	return 0;
+}
+
+int get_rackspace_container_list_of_files(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container,
+										  std::vector<std::string> *file_list, char *errorstring) {
+	std::string response;
+	if (get_container_list_of_files(cloudfiles_info, container, response, errorstring) > 0) {
+		strcpy_s(errorstring, 1024, "Erro chamando get_container_list_of_files");
+		return 1;
+	}
+	std::istringstream stream(response);
+	std::string line;
+	while (std::getline(stream, line)) {
+		file_list->push_back(line);
+	}
+
 	return 0;
 }

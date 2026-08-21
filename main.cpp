@@ -33,6 +33,15 @@ int main() {
 		return 1;
 	}
 	rackspaceconfig::cloudfiles_info cloudfiles_info;
-	get_rackspace_cloudfiles_info(&access_info, &cloudfiles_info, error);
+	if (get_rackspace_cloudfiles_info(&access_info, &cloudfiles_info, "ORD", error) > 0) {
+		fmt::println("Erro chamando get_rackspace_cloudfiles_info: {}", error);
+		return 1;
+	}
+	std::vector<std::string> file_list;
+	if (get_rackspace_container_list_of_files(&cloudfiles_info, std::string("sqlitebackup"), &file_list, error) > 0) {
+		fmt::println("Erro chamando get_container_list_of_files: {}", error);
+		return 1;
+	}
+
 	return 0;
 }
