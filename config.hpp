@@ -1,3 +1,4 @@
+#pragma once
 #ifndef _CONFIG_HPP_
 #define _CONFIG_HPP_
 
@@ -26,5 +27,11 @@ inline constexpr const char *authenticate_json_char =
 
 inline constexpr const char *rackspace_access_filename = "rackspace_access.json";
 inline constexpr const char *rackspace_config_filename = "config.json";
+
+struct cloudfiles_info {
+	std::string region;
+	std::string public_url;
+	std::string access_token;
+};
 } // namespace rackspaceconfig
 #endif

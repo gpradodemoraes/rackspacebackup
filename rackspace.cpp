@@ -62,11 +62,10 @@ int get_rackspace_access_information(rackspaceconfig::config *conf, nlohmann::js
 			return 1;
 		}
 
-		nlohmann::json access_json_data = nlohmann::json::parse(access_file_handler);
+		*access_info = nlohmann::json::parse(access_file_handler);
 		access_file_handler.close();
 
-		std::string access_token = access_json_data["access"]["token"]["id"].get<std::string>();
-		std::string expires = access_json_data["access"]["token"]["expires"].get<std::string>();
+		std::string expires = (*access_info)["access"]["token"]["expires"].get<std::string>();
 
 		ParsedTime pt = parseIso8601(expires);
 
@@ -82,6 +81,26 @@ int get_rackspace_access_information(rackspaceconfig::config *conf, nlohmann::js
 			std::remove(rackspaceconfig::rackspace_access_filename);
 		} else {
 			is_expired = false;
+		}
+	}
+	return 0;
+}
+
+int get_rackspace_cloudfiles_info(nlohmann::json *access_info, rackspaceconfig::cloudfiles_info *cloudfiles_info,
+								  char *error) {
+	cloudfiles_info->access_token = (*access_info)["access"]["token"]["id"].get<std::string>();
+
+	auto serviceCatalog = (*access_info)["access"]["serviceCatalog"].get<std::vector<nlohmann::json>>();
+
+	for (const auto &service : serviceCatalog) {
+		if (service["name"] == "cloudFiles") {
+			for (const auto &endpoint : service["endpoints"]) {
+				if (endpoint["region"] == "ORD") {
+					cloudfiles_info->region = endpoint["region"].get<std::string>();
+					cloudfiles_info->public_url = endpoint["publicURL"].get<std::string>();
+					return 0;
+				}
+			}
 		}
 	}
 	return 0;

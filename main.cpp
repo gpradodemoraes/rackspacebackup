@@ -1,7 +1,6 @@
 #include <fmt/core.h>
 #include <fstream>
 #include <nlohmann/json.hpp>
-using json = nlohmann::json;
 #include "compiled_with.h"
 #include "git_hash.h"
 #include "config.hpp"
@@ -22,7 +21,7 @@ int main() {
 		fmt::println("Could not open {}", rackspaceconfig::rackspace_config_filename);
 		return 1;
 	}
-	json data = json::parse(config_file_handler);
+	nlohmann::json data = nlohmann::json::parse(config_file_handler);
 	config_file_handler.close();
 	rackspaceconfig::config conf = data.get<rackspaceconfig::config>();
 
@@ -33,6 +32,7 @@ int main() {
 		fmt::println("Erro chamando get_rackspace_access_information: {}", error);
 		return 1;
 	}
-
+	rackspaceconfig::cloudfiles_info cloudfiles_info;
+	get_rackspace_cloudfiles_info(&access_info, &cloudfiles_info, error);
 	return 0;
 }
