@@ -63,15 +63,24 @@ int main() {
 		return 1;
 	}
 
+	std::vector<std::string> the_good_files_list;
 	std::regex get_file_date(R"(^([^.]*)\.([^.]*))");
 	for (const auto &file : file_list) {
 		std::smatch match;
 		if (std::regex_search(file, match, get_file_date)) {
 			if (match[2].str() < twenty_four_hours_ago) {
+				the_good_files_list.push_back(file);
 				fmt::println("we will download and then delete this file: {}<==>{}", match[1].str(), match[2].str());
 			}
 		}
 	}
 
+	char dest_folder[] = { R"(C:\Users\gprad\AppData\Local\Temp\destination_folder)" };
+
+	if (download_rackspace_file(&cloudfiles_info, std::string("sqlitebackup"), the_good_files_list.back(), dest_folder,
+								error) > 0) {
+		fmt::println("Erro chamando download_rackspace_file: {}", error);
+		return 1;
+	}
 	return 0;
 }

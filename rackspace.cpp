@@ -121,3 +121,8 @@ int get_rackspace_container_list_of_files(rackspaceconfig::cloudfiles_info *clou
 
 	return 0;
 }
+
+int download_rackspace_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container,
+							std::string filename, char *destination_folder, char *errorstring) {
+	return download_file(cloudfiles_info, container, filename, destination_folder, errorstring);
+}

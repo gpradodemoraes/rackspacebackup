@@ -2,6 +2,8 @@
 #include <fmt/core.h>
 #include <iostream>
 #include "remote.hpp"
+#include <string>
+#include <fstream>
 
 // State struct holding the file handle
 struct ReadState {
@@ -67,6 +69,13 @@ static void free_callback(void *userdata) {
 static size_t WriteCallback(void *contents, size_t size, size_t nmemb, std::string *output) {
 	size_t totalSize = size * nmemb;
 	output->append((char *)contents, totalSize);
+	return totalSize;
+}
+
+static size_t WriteCallbackToFile(void *contents, size_t size, size_t nmemb, std::ofstream *output) {
+	size_t totalSize = size * nmemb;
+	output->write((const char *)contents, totalSize);
+
 	return totalSize;
 }
 
@@ -156,6 +165,61 @@ int get_container_list_of_files(rackspaceconfig::cloudfiles_info *cloudfiles_inf
 
 		curl_slist_free_all(headers);
 		curl_easy_cleanup(curl);
+
+	} else {
+		strcpy_s(errorstring, 1024, "não foi possível criar o CURL");
+		retval = 1;
+	}
+	return retval;
+}
+
+int download_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container, std::string filename,
+				  char *destination_folder, char *errorstring) {
+#if defined(_WIN32)
+	constexpr char separator[] = "\\";
+#else
+	constexpr char separator[] = "/";
+#endif
+
+	int retval = 0;
+	std::string url = fmt::format("{}/{}/{}", cloudfiles_info->public_url, container, filename);
+
+	std::ofstream of;
+	std::string outputpath = fmt::format("{}{}{}", destination_folder, separator, filename);
+	of.open(outputpath, std::ios::binary);
+	if (!of) {
+		strcpy_s(errorstring, 1024, "could not write to download file");
+		return 1;
+	}
+
+	CURL *curl = curl_easy_init();
+	if (curl) {
+		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallbackToFile);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &of);
+		struct curl_slist *headers = nullptr;
+		std::string token = fmt::format("X-Auth-Token: {}", cloudfiles_info->access_token);
+		headers = curl_slist_append(headers, token.c_str());
+
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+		CURLcode res = curl_easy_perform(curl);
+		long httpCode = 0;
+		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+
+		if (res == CURLE_OK && httpCode == 200) {
+			// we are in business!
+		} else if (res != CURLE_OK) {
+			strcpy_s(errorstring, 1024, curl_easy_strerror(res));
+			retval = 1;
+		}
+
+		fmt::println("HTTP Status: {}", httpCode);
+		fmt::println("filename: {}", filename);
+
+		curl_slist_free_all(headers);
+		curl_easy_cleanup(curl);
+		of.close();
 
 	} else {
 		strcpy_s(errorstring, 1024, "não foi possível criar o CURL");
