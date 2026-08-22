@@ -123,6 +123,11 @@ int get_rackspace_container_list_of_files(rackspaceconfig::cloudfiles_info *clou
 }
 
 int download_rackspace_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container,
-							std::string filename, char *destination_folder, char *errorstring) {
-	return download_file(cloudfiles_info, container, filename, destination_folder, errorstring);
+							std::string &filename, char *destination_folder, char *errorstring) {
+	return remote_download_file(cloudfiles_info, container, filename, destination_folder, errorstring);
+}
+
+int delete_rackspace_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container,
+						  std::string &filename, char *errorstring) {
+	return remote_delete_file(cloudfiles_info, container, filename, errorstring);
 }

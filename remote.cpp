@@ -173,8 +173,8 @@ int get_container_list_of_files(rackspaceconfig::cloudfiles_info *cloudfiles_inf
 	return retval;
 }
 
-int download_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container, std::string filename,
-				  char *destination_folder, char *errorstring) {
+int remote_download_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container,
+						 std::string &filename, char *destination_folder, char *errorstring) {
 #if defined(_WIN32)
 	constexpr char separator[] = "\\";
 #else
@@ -221,6 +221,44 @@ int download_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string
 		curl_easy_cleanup(curl);
 		of.close();
 
+	} else {
+		strcpy_s(errorstring, 1024, "não foi possível criar o CURL");
+		retval = 1;
+	}
+	return retval;
+}
+
+int remote_delete_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container, std::string &filename,
+					   char *errorstring) {
+	int retval = 0;
+	std::string url = fmt::format("{}/{}/{}", cloudfiles_info->public_url, container, filename);
+
+	CURL *curl = curl_easy_init();
+	if (curl) {
+		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+		struct curl_slist *headers = nullptr;
+		std::string token = fmt::format("X-Auth-Token: {}", cloudfiles_info->access_token);
+		headers = curl_slist_append(headers, token.c_str());
+
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+		CURLcode res = curl_easy_perform(curl);
+		long httpCode = 0;
+		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+
+		if (res == CURLE_OK && httpCode == 200) {
+			// we are in business!
+		} else if (res != CURLE_OK) {
+			strcpy_s(errorstring, 1024, curl_easy_strerror(res));
+			retval = 1;
+		}
+
+		fmt::println("HTTP Status: {}", httpCode);
+		fmt::println("deleted filename: {}", filename);
+
+		curl_slist_free_all(headers);
+		curl_easy_cleanup(curl);
 	} else {
 		strcpy_s(errorstring, 1024, "não foi possível criar o CURL");
 		retval = 1;

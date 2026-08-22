@@ -10,6 +10,8 @@ int get_rackspace_container_list_of_files(rackspaceconfig::cloudfiles_info *clou
 										  std::vector<std::string> *file_list, char *errorstring);
 
 int download_rackspace_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container,
-							std::string filename, char *destination_folder, char *errorstring);
+							std::string &filename, char *destination_folder, char *errorstring);
 
+int delete_rackspace_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container,
+						  std::string &filename, char *errorstring);
 #endif

@@ -75,10 +75,13 @@ int main() {
 		}
 	}
 
-	char dest_folder[] = { R"(C:\Users\gprad\AppData\Local\Temp\destination_folder)" };
+	// char dest_folder[] = { R"(C:\Users\gprad\AppData\Local\Temp\destination_folder)" };
 
-	if (download_rackspace_file(&cloudfiles_info, std::string("sqlitebackup"), the_good_files_list.back(), dest_folder,
-								error) > 0) {
+	// if (download_rackspace_file(&cloudfiles_info, std::string("sqlitebackup"), the_good_files_list.back(),
+	// dest_folder, 							error) > 0) { 	fmt::println("Erro chamando download_rackspace_file: {}", error); 	return 1;
+	// }
+
+	if (delete_rackspace_file(&cloudfiles_info, std::string("sqlitebackup"), the_good_files_list.back(), error) > 0) {
 		fmt::println("Erro chamando download_rackspace_file: {}", error);
 		return 1;
 	}

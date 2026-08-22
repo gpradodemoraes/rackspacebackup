@@ -6,7 +6,10 @@ int authenticate_to_rackspace_cloud(rackspaceconfig::config *config, std::string
 int get_container_list_of_files(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container,
 								std::string &response, char *errorstring);
 
-int download_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container, std::string filename,
-				  char *destination_folder, char *errorstring);
+int remote_download_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container,
+						 std::string &filename, char *destination_folder, char *errorstring);
+
+int remote_delete_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container, std::string &filename,
+					   char *errorstring);
 
 #endif
