@@ -74,7 +74,7 @@ int main() {
 		if (std::regex_search(file, match, get_file_date)) {
 			if (match[2].str() < twenty_four_hours_ago) {
 				the_good_files_list.push_back(file);
-				fmt::println("we will download and then delete this file: {}<==>{}", match[1].str(), match[2].str());
+				// fmt::println("we will download and then delete this file: {}<==>{}", match[1].str(), match[2].str());
 			}
 		}
 	}

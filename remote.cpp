@@ -120,8 +120,8 @@ int authenticate_to_rackspace_cloud(rackspaceconfig::config *config, std::string
 			retval = 1;
 		}
 
-		fmt::println("HTTP Status: {}", httpCode);
-		fmt::println("RESPONSE: {}", response);
+		fmt::println("HTTP Status from token file: {}", httpCode);
+		// fmt::println("RESPONSE: {}", response);
 
 		curl_slist_free_all(headers);
 		curl_easy_cleanup(curl);
@@ -160,8 +160,8 @@ int get_container_list_of_files(rackspaceconfig::cloudfiles_info *cloudfiles_inf
 			retval = 1;
 		}
 
-		fmt::println("HTTP Status: {}", httpCode);
-		fmt::println("RESPONSE: {}", response);
+		fmt::println("HTTP Status from files list: {}", httpCode);
+		// fmt::println("RESPONSE: {}", response);
 
 		curl_slist_free_all(headers);
 		curl_easy_cleanup(curl);
