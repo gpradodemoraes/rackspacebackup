@@ -53,6 +53,13 @@ int main(int argc, char *argv[]) {
 	fmt::println("container:   {}", container);
 	fmt::println("max_files:   {}", max_files);
 
+	struct stat sb;
+
+	if (stat(dest_folder, &sb) != 0) {
+		fmt::println("Folder {} does not exist", dest_folder);
+		return 1;
+	}
+
 	auto in_the_past = std::chrono::system_clock::now() - std::chrono::hours(24);
 	std::time_t time = std::chrono::system_clock::to_time_t(in_the_past);
 
