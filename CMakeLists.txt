@@ -43,12 +43,15 @@ if (MSVC)
 	endif()
 endif()
 
+include_directories(getopt/include)
+add_subdirectory(getopt)
 
 add_executable(rackspacebackup main.cpp build_timestamp.cpp remote.cpp rackspace.cpp)
 
 target_link_libraries(rackspacebackup PRIVATE fmt::fmt-header-only)
 target_link_libraries(rackspacebackup PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(rackspacebackup PRIVATE CURL::libcurl)
+target_link_libraries(rackspacebackup PRIVATE libwinc)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 if(CMAKE_BUILD_TYPE STREQUAL "Release")

@@ -8,23 +8,50 @@
 #include <iomanip>
 #include <sstream>
 #include <memory>
+#include <charconv>
 #include "compiled_with.h"
 #include "git_hash.h"
 #include "config.hpp"
 #include "rackspace.hpp"
+#include "getopt.h"
 #include <utility>
 #include <string.h>
 
 extern const char *build_date;
 extern const char *rackspace_access_filename;
 
-int main() {
+int main(int argc, char *argv[]) {
 	fmt::println("Hello, World!");
 	fmt::println("Compiled With: {}", COMPILED_WITH);
 	fmt::println("Git: {} {}", GIT_REV, GIT_BRANCH);
 	fmt::println("Build Time: {}", build_date);
 
+	int opt;
+	int longindex;
 	char error[1024] = { 0 };
+
+	char dest_folder[2048] = { 0 };
+	char container[1024] = { 0 };
+	size_t max_files = 5;
+
+	constexpr option rackspace_options[] = { { "dest_folder", required_argument, nullptr, 'd' },
+											 { "container", required_argument, nullptr, 'c' },
+											 { "max_files", required_argument, nullptr, 'm' },
+											 { "help", required_argument, nullptr, 'h' },
+											 { nullptr, 0 } };
+
+	while ((opt = getopt_long(argc, argv, "d:c:m:h:", rackspace_options, &longindex)) != -1) {
+		switch (opt) {
+			case 'd': std::strcpy(dest_folder, optarg); break;
+			case 'c': std::strcpy(container, optarg); break;
+			case 'm': std::from_chars(optarg, optarg + strlen(optarg), max_files); break;
+		}
+	}
+
+	fmt::println("OPTIONS:");
+	fmt::println("dest_folder: {}", dest_folder);
+	fmt::println("container:   {}", container);
+	fmt::println("max_files:   {}", max_files);
 
 	auto in_the_past = std::chrono::system_clock::now() - std::chrono::hours(24);
 	std::time_t time = std::chrono::system_clock::to_time_t(in_the_past);
@@ -79,12 +106,9 @@ int main() {
 		}
 	}
 
-	constexpr char dest_folder[] = { R"(C:\Users\gprad\MEGA\sqlitebackup)" };
-	constexpr char container[] = { R"(sqlitebackup)" };
-
 	std::vector<std::future<std::pair<int, std::unique_ptr<char[]>>>> my_futures;
 
-	int count = 0;
+	size_t counter = 0;
 	for (auto const &filename : the_good_files_list) {
 		my_futures.push_back(std::async(
 			std::launch::async,
@@ -99,7 +123,8 @@ int main() {
 						 std::move(my_error) };
 			},
 			&cloudfiles_info, std::string(container), (std::string &)filename, (char *)dest_folder));
-		if (count++ > 4) break;
+		counter++;
+		if (counter >= max_files) break;
 	}
 
 	for (auto &f : my_futures) {
