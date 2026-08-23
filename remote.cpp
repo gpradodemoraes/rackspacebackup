@@ -214,8 +214,7 @@ int remote_download_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std:
 			retval = 1;
 		}
 
-		fmt::println("HTTP Status: {}", httpCode);
-		fmt::println("filename: {}", filename);
+		fmt::println("HTTP Status: {}; downloaded {}", httpCode, filename);
 
 		curl_slist_free_all(headers);
 		curl_easy_cleanup(curl);
@@ -254,8 +253,7 @@ int remote_delete_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::s
 			retval = 1;
 		}
 
-		fmt::println("HTTP Status: {}", httpCode);
-		fmt::println("deleted filename: {}", filename);
+		fmt::println("HTTP Status: {}; DELETED    {}", httpCode, filename);
 
 		curl_slist_free_all(headers);
 		curl_easy_cleanup(curl);

@@ -131,3 +131,11 @@ int delete_rackspace_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std
 						  std::string &filename, char *errorstring) {
 	return remote_delete_file(cloudfiles_info, container, filename, errorstring);
 }
+
+int download_and_delete_rackspace_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container,
+									   std::string &filename, char *destination_folder, char *errorstring) {
+	if (remote_download_file(cloudfiles_info, container, filename, destination_folder, errorstring) > 0) {
+		return 1;
+	}
+	return remote_delete_file(cloudfiles_info, container, filename, errorstring);
+}

@@ -14,4 +14,7 @@ int download_rackspace_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, s
 
 int delete_rackspace_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container,
 						  std::string &filename, char *errorstring);
+
+int download_and_delete_rackspace_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container,
+									   std::string &filename, char *destination_folder, char *errorstring);
 #endif

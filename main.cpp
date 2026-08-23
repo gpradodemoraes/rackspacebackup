@@ -3,13 +3,17 @@
 #include <nlohmann/json.hpp>
 #include <regex>
 #include <chrono>
+#include <future>
 #include <string>
 #include <iomanip>
 #include <sstream>
+#include <memory>
 #include "compiled_with.h"
 #include "git_hash.h"
 #include "config.hpp"
 #include "rackspace.hpp"
+#include <utility>
+#include <string.h>
 
 extern const char *build_date;
 extern const char *rackspace_access_filename;
@@ -75,15 +79,33 @@ int main() {
 		}
 	}
 
-	// char dest_folder[] = { R"(C:\Users\gprad\AppData\Local\Temp\destination_folder)" };
+	constexpr char dest_folder[] = { R"(C:\Users\gprad\MEGA\sqlitebackup)" };
+	constexpr char container[] = { R"(sqlitebackup)" };
 
-	// if (download_rackspace_file(&cloudfiles_info, std::string("sqlitebackup"), the_good_files_list.back(),
-	// dest_folder, 							error) > 0) { 	fmt::println("Erro chamando download_rackspace_file: {}", error); 	return 1;
-	// }
+	std::vector<std::future<std::pair<int, std::unique_ptr<char[]>>>> my_futures;
 
-	if (delete_rackspace_file(&cloudfiles_info, std::string("sqlitebackup"), the_good_files_list.back(), error) > 0) {
-		fmt::println("Erro chamando download_rackspace_file: {}", error);
-		return 1;
+	int count = 0;
+	for (auto const &filename : the_good_files_list) {
+		my_futures.push_back(std::async(
+			std::launch::async,
+
+			[&](rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container, std::string &filename,
+				char *destination_folder) -> std::pair<int, std::unique_ptr<char[]>> {
+				std::unique_ptr<char[]> my_error = std::make_unique<char[]>(1024);
+				strcpy_s(my_error.get(), 1024, filename.c_str());
+				strcat_s(my_error.get(), 1024 - strlen(my_error.get()), " OK!");
+				return { download_and_delete_rackspace_file(cloudfiles_info, container, filename, (char *)dest_folder,
+															my_error.get()),
+						 std::move(my_error) };
+			},
+			&cloudfiles_info, std::string(container), (std::string &)filename, (char *)dest_folder));
+		if (count++ > 4) break;
 	}
+
+	for (auto &f : my_futures) {
+		std::pair<int, std::unique_ptr<char[]>> result = f.get();
+		fmt::println("[{}] {}", result.first, result.second.get());
+	}
+
 	return 0;
 }
