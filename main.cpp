@@ -21,7 +21,6 @@ extern const char *build_date;
 extern const char *rackspace_access_filename;
 
 int main(int argc, char *argv[]) {
-	fmt::println("Hello, World!");
 	fmt::println("Compiled With: {}", COMPILED_WITH);
 	fmt::println("Git: {} {}", GIT_REV, GIT_BRANCH);
 	fmt::println("Build Time: {}", build_date);
@@ -117,9 +116,10 @@ int main(int argc, char *argv[]) {
 
 	size_t counter = 0;
 	for (auto const &filename : the_good_files_list) {
+		counter++;
+		fmt::println("File number: {:03}; requesting {}", counter, filename);
 		my_futures.push_back(std::async(
 			std::launch::async,
-
 			[&](rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container, std::string &filename,
 				char *destination_folder) -> std::pair<int, std::unique_ptr<char[]>> {
 				std::unique_ptr<char[]> my_error = std::make_unique<char[]>(1024);
@@ -130,7 +130,6 @@ int main(int argc, char *argv[]) {
 						 std::move(my_error) };
 			},
 			&cloudfiles_info, std::string(container), (std::string &)filename, (char *)dest_folder));
-		counter++;
 		if (counter >= max_files) break;
 	}
 
