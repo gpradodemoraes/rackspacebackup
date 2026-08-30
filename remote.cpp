@@ -174,7 +174,7 @@ int get_container_list_of_files(rackspaceconfig::cloudfiles_info *cloudfiles_inf
 }
 
 int remote_download_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container,
-						 std::string &filename, char *destination_folder, char *errorstring) {
+						 std::string &filename, char *destination_folder, size_t order, char *errorstring) {
 #if defined(_WIN32)
 	constexpr char separator[] = "\\";
 #else
@@ -214,7 +214,7 @@ int remote_download_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std:
 			retval = 1;
 		}
 
-		fmt::println("HTTP Status: {}; downloaded {}", httpCode, filename);
+		fmt::println("HTTP Status: {}; DOWNLOADED {:03} {}", httpCode, order, filename);
 
 		curl_slist_free_all(headers);
 		curl_easy_cleanup(curl);
@@ -228,7 +228,7 @@ int remote_download_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std:
 }
 
 int remote_delete_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container, std::string &filename,
-					   char *errorstring) {
+					   size_t order, char *errorstring) {
 	int retval = 0;
 	std::string url = fmt::format("{}/{}/{}", cloudfiles_info->public_url, container, filename);
 
@@ -253,7 +253,7 @@ int remote_delete_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::s
 			retval = 1;
 		}
 
-		fmt::println("HTTP Status: {}; DELETED    {}", httpCode, filename);
+		fmt::println("HTTP Status: {}; DELETED    {:03} {}", httpCode, order, filename);
 
 		curl_slist_free_all(headers);
 		curl_easy_cleanup(curl);

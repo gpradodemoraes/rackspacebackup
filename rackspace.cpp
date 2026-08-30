@@ -123,19 +123,20 @@ int get_rackspace_container_list_of_files(rackspaceconfig::cloudfiles_info *clou
 }
 
 int download_rackspace_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container,
-							std::string &filename, char *destination_folder, char *errorstring) {
-	return remote_download_file(cloudfiles_info, container, filename, destination_folder, errorstring);
+							std::string &filename, char *destination_folder, size_t order, char *errorstring) {
+	return remote_download_file(cloudfiles_info, container, filename, destination_folder, order, errorstring);
 }
 
 int delete_rackspace_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container,
-						  std::string &filename, char *errorstring) {
-	return remote_delete_file(cloudfiles_info, container, filename, errorstring);
+						  std::string &filename, size_t order, char *errorstring) {
+	return remote_delete_file(cloudfiles_info, container, filename, order, errorstring);
 }
 
 int download_and_delete_rackspace_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container,
-									   std::string &filename, char *destination_folder, char *errorstring) {
-	if (remote_download_file(cloudfiles_info, container, filename, destination_folder, errorstring) > 0) {
+									   std::string &filename, char *destination_folder, size_t order,
+									   char *errorstring) {
+	if (remote_download_file(cloudfiles_info, container, filename, destination_folder, order, errorstring) > 0) {
 		return 1;
 	}
-	return remote_delete_file(cloudfiles_info, container, filename, errorstring);
+	return remote_delete_file(cloudfiles_info, container, filename, order, errorstring);
 }

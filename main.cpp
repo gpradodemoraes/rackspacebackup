@@ -117,19 +117,19 @@ int main(int argc, char *argv[]) {
 	size_t counter = 0;
 	for (auto const &filename : the_good_files_list) {
 		counter++;
-		fmt::println("File number: {:03}; requesting {}", counter, filename);
+		fmt::println("                  REQUESTING {:03} {}", counter, filename);
 		my_futures.push_back(std::async(
 			std::launch::async,
 			[&](rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container, std::string &filename,
-				char *destination_folder) -> std::pair<int, std::unique_ptr<char[]>> {
+				char *destination_folder, size_t order) -> std::pair<int, std::unique_ptr<char[]>> {
 				std::unique_ptr<char[]> my_error = std::make_unique<char[]>(1024);
 				strcpy_s(my_error.get(), 1024, filename.c_str());
 				strcat_s(my_error.get(), 1024 - strlen(my_error.get()), " OK!");
 				return { download_and_delete_rackspace_file(cloudfiles_info, container, filename, (char *)dest_folder,
-															my_error.get()),
+															order, my_error.get()),
 						 std::move(my_error) };
 			},
-			&cloudfiles_info, std::string(container), (std::string &)filename, (char *)dest_folder));
+			&cloudfiles_info, std::string(container), (std::string &)filename, (char *)dest_folder, counter));
 		if (counter >= max_files) break;
 	}
 
