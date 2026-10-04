@@ -106,11 +106,12 @@ int get_rackspace_cloudfiles_info(nlohmann::json *access_info, rackspaceconfig::
 	return 0;
 }
 
-int get_rackspace_container_list_of_files(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container,
-										  std::vector<std::string> *file_list, char *errorstring) {
+int get_rackspace_container_list_of_files(rackspaceconfig::cloudfiles_info *cloudfiles_info,
+										  const std::string &container, std::vector<std::string> *file_list,
+										  char *errorstring) {
 	std::string response;
 	if (get_container_list_of_files(cloudfiles_info, container, response, errorstring) > 0) {
-		strcpy_s(errorstring, 1024, "Erro chamando get_container_list_of_files");
+		std::snprintf(errorstring, 1024, "%s", "Erro chamando get_container_list_of_files");
 		return 1;
 	}
 	std::istringstream stream(response);

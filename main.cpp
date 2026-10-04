@@ -2,6 +2,7 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <regex>
+#include <vector>
 #include <chrono>
 #include <future>
 #include <string>
@@ -16,6 +17,9 @@
 #include "getopt.h"
 #include <utility>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <cstdio>
 
 extern const char *build_date;
 extern const char *rackspace_access_filename;
@@ -123,8 +127,9 @@ int main(int argc, char *argv[]) {
 			[&](rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container, std::string &filename,
 				char *destination_folder, size_t order) -> std::pair<int, std::unique_ptr<char[]>> {
 				std::unique_ptr<char[]> my_error = std::make_unique<char[]>(1024);
-				strcpy_s(my_error.get(), 1024, filename.c_str());
-				strcat_s(my_error.get(), 1024 - strlen(my_error.get()), " OK!");
+				std::snprintf(my_error.get(), 1024, "%s", filename.c_str());
+				std::snprintf(my_error.get() + std::strlen(my_error.get()), 1024 - std::strlen(my_error.get()), "%s",
+							  " OK!");
 				return { download_and_delete_rackspace_file(cloudfiles_info, container, filename, (char *)dest_folder,
 															order, my_error.get()),
 						 std::move(my_error) };

@@ -86,14 +86,14 @@ int authenticate_to_rackspace_cloud(rackspaceconfig::config *config, std::string
 	std::string yourApiKey("yourApiKey");
 	size_t start_pos = authenticate_json.find(yourUserName);
 	if (start_pos == std::string::npos) {
-		strcpy_s(errorstring, 1024, "erro criando authenticate_json para yourUserName");
+		std::snprintf(errorstring, 1024, "%s", "erro criando authenticate_json para yourUserName");
 		return 1;
 	}
 	authenticate_json.replace(start_pos, yourUserName.length(), config->get_username());
 
 	start_pos = authenticate_json.find(yourApiKey);
 	if (start_pos == std::string::npos) {
-		strcpy_s(errorstring, 1024, "erro criando authenticate_json para yourApiKey");
+		std::snprintf(errorstring, 1024, "%s", "erro criando authenticate_json para yourApiKey");
 		return 1;
 	}
 	authenticate_json.replace(start_pos, yourApiKey.length(), config->get_api_key());
@@ -116,7 +116,7 @@ int authenticate_to_rackspace_cloud(rackspaceconfig::config *config, std::string
 		if (res == CURLE_OK && httpCode == 200 && response.size() > 0) {
 			// we are in business!
 		} else if (res != CURLE_OK) {
-			strcpy_s(errorstring, 1024, curl_easy_strerror(res));
+			std::snprintf(errorstring, 1024, "%s", curl_easy_strerror(res));
 			retval = 1;
 		}
 
@@ -127,13 +127,13 @@ int authenticate_to_rackspace_cloud(rackspaceconfig::config *config, std::string
 		curl_easy_cleanup(curl);
 
 	} else {
-		strcpy_s(errorstring, 1024, "não foi possível criar o CURL");
+		std::snprintf(errorstring, 1024, "%s", "não foi possível criar o CURL");
 		retval = 1;
 	}
 	return retval;
 }
 
-int get_container_list_of_files(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container,
+int get_container_list_of_files(rackspaceconfig::cloudfiles_info *cloudfiles_info, const std::string &container,
 								std::string &response, char *errorstring) {
 	int retval = 0;
 	std::string container_url = cloudfiles_info->public_url + "/" + container;
@@ -156,7 +156,7 @@ int get_container_list_of_files(rackspaceconfig::cloudfiles_info *cloudfiles_inf
 		if (res == CURLE_OK && httpCode == 200 && response.size() > 0) {
 			// we are in business!
 		} else if (res != CURLE_OK) {
-			strcpy_s(errorstring, 1024, curl_easy_strerror(res));
+			std::snprintf(errorstring, 1024, "%s", curl_easy_strerror(res));
 			retval = 1;
 		}
 
@@ -167,7 +167,7 @@ int get_container_list_of_files(rackspaceconfig::cloudfiles_info *cloudfiles_inf
 		curl_easy_cleanup(curl);
 
 	} else {
-		strcpy_s(errorstring, 1024, "não foi possível criar o CURL");
+		std::snprintf(errorstring, 1024, "%s", "não foi possível criar o CURL");
 		retval = 1;
 	}
 	return retval;
@@ -188,7 +188,7 @@ int remote_download_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std:
 	std::string outputpath = fmt::format("{}{}{}", destination_folder, separator, filename);
 	of.open(outputpath, std::ios::binary);
 	if (!of) {
-		strcpy_s(errorstring, 1024, "could not write to download file");
+		std::snprintf(errorstring, 1024, "%s", "could not write to download file");
 		return 1;
 	}
 
@@ -210,7 +210,7 @@ int remote_download_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std:
 		if (res == CURLE_OK && httpCode == 200) {
 			// we are in business!
 		} else if (res != CURLE_OK) {
-			strcpy_s(errorstring, 1024, curl_easy_strerror(res));
+			std::snprintf(errorstring, 1024, "%s", curl_easy_strerror(res));
 			retval = 1;
 		}
 
@@ -221,7 +221,7 @@ int remote_download_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std:
 		of.close();
 
 	} else {
-		strcpy_s(errorstring, 1024, "não foi possível criar o CURL");
+		std::snprintf(errorstring, 1024, "%s", "não foi possível criar o CURL");
 		retval = 1;
 	}
 	return retval;
@@ -249,7 +249,7 @@ int remote_delete_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::s
 		if (res == CURLE_OK && httpCode == 200) {
 			// we are in business!
 		} else if (res != CURLE_OK) {
-			strcpy_s(errorstring, 1024, curl_easy_strerror(res));
+			std::snprintf(errorstring, 1024, "%s", curl_easy_strerror(res));
 			retval = 1;
 		}
 
@@ -258,7 +258,7 @@ int remote_delete_file(rackspaceconfig::cloudfiles_info *cloudfiles_info, std::s
 		curl_slist_free_all(headers);
 		curl_easy_cleanup(curl);
 	} else {
-		strcpy_s(errorstring, 1024, "não foi possível criar o CURL");
+		std::snprintf(errorstring, 1024, "%s", "não foi possível criar o CURL");
 		retval = 1;
 	}
 	return retval;
