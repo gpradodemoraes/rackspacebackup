@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
 		fmt::println("                  REQUESTING {:03} {}", counter, filename);
 		my_futures.push_back(std::async(
 			std::launch::async,
-			[&](rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string &container, std::string &filename,
+			[&](rackspaceconfig::cloudfiles_info *cloudfiles_info, std::string container, std::string filename,
 				char *destination_folder, size_t order) -> std::pair<int, std::unique_ptr<char[]>> {
 				std::unique_ptr<char[]> my_error = std::make_unique<char[]>(1024);
 				std::snprintf(my_error.get(), 1024, "%s", filename.c_str());
