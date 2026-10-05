@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <fmt/core.h>
 #include <fstream>
 #include <nlohmann/json.hpp>
@@ -45,8 +46,14 @@ int main(int argc, char *argv[]) {
 
 	while ((opt = getopt_long(argc, argv, "d:c:m:h:", rackspace_options, &longindex)) != -1) {
 		switch (opt) {
-			case 'd': std::strcpy(dest_folder, optarg); break;
-			case 'c': std::strcpy(container, optarg); break;
+			case 'd': {
+				std::strncpy(dest_folder, optarg, sizeof(dest_folder) - 1);
+				dest_folder[sizeof(dest_folder) - 1] = '\0';
+			} break;
+			case 'c': {
+				std::strncpy(container, optarg, sizeof(container) - 1);
+				container[sizeof(container) - 1] = '\0';
+			} break;
 			case 'm': std::from_chars(optarg, optarg + strlen(optarg), max_files); break;
 		}
 	}
