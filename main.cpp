@@ -25,6 +25,15 @@
 extern const char *build_date;
 extern const char *rackspace_access_filename;
 
+static void print_usage() {
+	fmt::println("Usage: rackspacebackup --dest_folder C:\\TEMP\\sqlitebackup --container sqlitebackup --max_files 5");
+	fmt::println("Options:");
+	fmt::println("  --dest_folder, -d  Destination folder to download files to");
+	fmt::println("  --container, -c    Rackspace container name");
+	fmt::println("  --max_files, -m    Maximum number of files to download (default: 0, 0 means unlimited)");
+	fmt::println("  --help, -h         Show this help message");
+}
+
 int main(int argc, char *argv[]) {
 	fmt::println("Compiled With: {}", COMPILED_WITH);
 	fmt::println("Git: {} {}", GIT_REV, GIT_BRANCH);
@@ -36,12 +45,12 @@ int main(int argc, char *argv[]) {
 
 	char dest_folder[2048] = { 0 };
 	char container[1024] = { 0 };
-	size_t max_files = 5;
+	size_t max_files = 0;
 
 	constexpr option rackspace_options[] = { { "dest_folder", required_argument, nullptr, 'd' },
 											 { "container", required_argument, nullptr, 'c' },
-											 { "max_files", required_argument, nullptr, 'm' },
-											 { "help", required_argument, nullptr, 'h' },
+											 { "max_files", optional_argument, nullptr, 'm' },
+											 { "help", optional_argument, nullptr, 'h' },
 											 { nullptr, 0 } };
 
 	while ((opt = getopt_long(argc, argv, "d:c:m:h:", rackspace_options, &longindex)) != -1) {
@@ -55,6 +64,7 @@ int main(int argc, char *argv[]) {
 				container[sizeof(container) - 1] = '\0';
 			} break;
 			case 'm': std::from_chars(optarg, optarg + strlen(optarg), max_files); break;
+			case 'h': print_usage(); return 0;
 		}
 	}
 
@@ -66,7 +76,14 @@ int main(int argc, char *argv[]) {
 	struct stat sb;
 
 	if (stat(dest_folder, &sb) != 0) {
-		fmt::println("Folder {} does not exist", dest_folder);
+		fmt::println("Folder \"{}\" does not exist", dest_folder);
+		print_usage();
+		return 1;
+	}
+
+	if (std::strcmp(container, "") == 0) {
+		fmt::println("Containder cannot be empty");
+		print_usage();
 		return 1;
 	}
 
@@ -106,7 +123,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 	std::vector<std::string> file_list;
-	if (get_rackspace_container_list_of_files(&cloudfiles_info, std::string("sqlitebackup"), &file_list, error) > 0) {
+	if (get_rackspace_container_list_of_files(&cloudfiles_info, std::string(container), &file_list, error) > 0) {
 		fmt::println("Erro chamando get_container_list_of_files: {}", error);
 		return 1;
 	}
@@ -142,7 +159,7 @@ int main(int argc, char *argv[]) {
 						 std::move(my_error) };
 			},
 			&cloudfiles_info, std::string(container), (std::string &)filename, (char *)dest_folder, counter));
-		if (counter >= max_files) break;
+		if (max_files > 0 && counter >= max_files) break;
 	}
 
 	for (auto &f : my_futures) {
