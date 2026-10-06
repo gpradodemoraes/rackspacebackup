@@ -49,8 +49,8 @@ int main(int argc, char *argv[]) {
 
 	constexpr option rackspace_options[] = { { "dest_folder", required_argument, nullptr, 'd' },
 											 { "container", required_argument, nullptr, 'c' },
-											 { "max_files", optional_argument, nullptr, 'm' },
-											 { "help", optional_argument, nullptr, 'h' },
+											 { "max_files", required_argument, nullptr, 'm' },
+											 { "help", no_argument, nullptr, 'h' },
 											 { nullptr, 0 } };
 
 	while ((opt = getopt_long(argc, argv, "d:c:m:h:", rackspace_options, &longindex)) != -1) {
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (std::strcmp(container, "") == 0) {
-		fmt::println("Containder cannot be empty");
+		fmt::println("Container cannot be empty");
 		print_usage();
 		return 1;
 	}
