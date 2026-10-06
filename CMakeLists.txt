@@ -22,12 +22,13 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
       "${CMAKE_CURRENT_BINARY_DIR}/git_hash.h"
     )
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
-    add_custom_target(gen-version-h
+    add_custom_target(gen-version-h ALL
       COMMAND "${CMAKE_COMMAND}"
       "-D" "SRC_DIR=${PROJECT_SOURCE_DIR}"
       "-D" "BIN_DIR=${CMAKE_CURRENT_BINARY_DIR}"
       "-P" "${PROJECT_SOURCE_DIR}/version.cmake"
       COMMENT "Generating git version file"
+      BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/git_hash.h
     )
 endif()
 
@@ -56,8 +57,9 @@ target_link_libraries(rackspacebackup PRIVATE libwinc)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     add_dependencies(rackspacebackup gen-version-h)
-	add_custom_target(file_toucher
-		COMMAND ${CMAKE_COMMAND} -E touch_nocreate ${CMAKE_CURRENT_SOURCE_DIR}/build_timestamp.cpp ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+	add_custom_target(file_toucher ALL
+		COMMAND ${CMAKE_COMMAND} -E touch_nocreate ${CMAKE_CURRENT_SOURCE_DIR}/build_timestamp.cpp ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+		BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/build_timestamp.cpp)
 
 	add_dependencies(rackspacebackup file_toucher)
 endif()
